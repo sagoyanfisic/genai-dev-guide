@@ -1,0 +1,65 @@
+version: '3.8'
+
+services:
+  mariadb:
+    image: mariadb:11
+    container_name: pdf_ai_mariadb
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root_password}
+      MYSQL_DATABASE: ${DB_NAME:-pdf_ai_db}
+      MYSQL_USER: ${DB_USER:-pdf_user}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-pdf_password}
+    volumes:
+      - mariadb_data:/var/lib/mysql
+    ports:
+      - "${DB_PORT:-3306}:3306"
+    networks:
+      - app_network
+
+      
+  app:
+    build: .
+    container_name: pdf_ai_app
+    restart: unless-stopped
+    depends_on:
+      - mariadb
+    environment:
+      # Database
+      DATABASE_URL: mysql+pymysql://${DB_USER:-pdf_user}:${DB_PASSWORD:-pdf_password}@mariadb:3306/${DB_NAME:-pdf_ai_db}
+      DB_HOST: mariadb
+      DB_PORT: 3306
+      DB_NAME: ${DB_NAME:-pdf_ai_db}
+      DB_USER: ${DB_USER:-pdf_user}
+      DB_PASSWORD: ${DB_PASSWORD:-pdf_password}
+      
+      # AI Services
+      GOOGLE_API_KEY: ${GOOGLE_API_KEY}
+      USE_VERTEX_AI: ${USE_VERTEX_AI:-false}
+      VERTEX_AI_PROJECT_ID: ${VERTEX_AI_PROJECT_ID}
+      VERTEX_AI_LOCATION: ${VERTEX_AI_LOCATION:-us-central1}
+      
+      # App
+      ENVIRONMENT: ${ENVIRONMENT:-development}
+      GCP_PROJECT_ID: ${GCP_PROJECT_ID}
+    volumes:
+      - app_pdfs:/app/pdfs
+      - app_logs:/app/logs
+    ports:
+      - "${APP_PORT:-8000}:8000"
+    networks:
+      - app_network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      
+volumes:
+  mariadb_data:
+  app_pdfs:
+  app_logs:
+
+networks:
+  app_network:
+    driver: bridge
