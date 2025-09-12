@@ -1,3 +1,8 @@
+# Git
+.git
+.gitignore
+
+# Python
 __pycache__
 *.pyc
 *.pyo
@@ -9,31 +14,65 @@ pip-delete-this-directory.txt
 .tox
 .coverage
 .coverage.*
-.cache
+.pytest_cache
 nosetests.xml
 coverage.xml
 *.cover
 *.log
-.git
+.cache
 .mypy_cache
-.pytest_cache
-.hypothesis
 
-.DS_Store
-.vscode
-.idea
-
-*.md
-!README.md
-
+# Virtual environments
 .env
-.env.local
-.env.*.local
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
 
-node_modules
+# IDEs
+.vscode/
+.idea/
 *.swp
 *.swo
+*~
 
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Documentation
+*.md
+docs/
+
+# Development files
+.kiro/
+tests/
+*.test.py
+test_*.py
+
+# Logs
+logs/
+*.log
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# Docker
+Dockerfile*
+docker-compose*
 .dockerignore
-Dockerfile
-docker-compose*.yml
+
+# CI/CD
+.github/
+.gitlab-ci.yml
+.travis.yml
+Jenkinsfile

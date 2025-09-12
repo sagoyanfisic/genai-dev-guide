@@ -30,54 +30,36 @@ def root():
 def health_check():
     return {"status": "healthy"}
 
-@app.get("/debug-ai")
-def debug_ai_service():
-    """Debug endpoint para probar configuración de AI"""
+@app.get("/ai-status")
+def ai_service_status():
+    """Check Gemini AI service status"""
     try:
         from app.core.config import settings
-        from app.infrastructure.ai_factory import AIServiceFactory
+        from app.infrastructure.external_services import GeminiAIService
         
-        # Debug: mostrar configuración
         api_key = settings.get_google_api_key()
-        use_vertex = getattr(settings, 'use_vertex_ai', False)
         
-        debug_info = {
-            "use_vertex_ai": use_vertex,
-            "api_key_configured": bool(api_key),
-            "api_key_length": len(api_key) if api_key else 0,
-            "api_key_prefix": api_key[:10] + "..." if api_key and len(api_key) > 10 else api_key,
-            "vertex_project_id": getattr(settings, 'vertex_ai_project_id', None),
-            "vertex_location": getattr(settings, 'vertex_ai_location', None)
-        }
+        if not api_key:
+            return {
+                "status": "error",
+                "message": "GOOGLE_API_KEY not configured",
+                "service": "Gemini Direct API"
+            }
         
-        # Obtener información del servicio configurado
-        service_info = AIServiceFactory.get_service_info()
-        
-        # Intentar crear servicio
-        ai_service = AIServiceFactory.create_ai_service()
-        
-        # Probar generación de descripción simple
-        test_description = ai_service.generate_product_description(
-            name="Test Product",
-            category="Electronics", 
-            brand="TestBrand",
-            basic_info="Simple test product"
-        )
+        # Test service initialization
+        ai_service = GeminiAIService()
+        service_info = ai_service.get_service_info()
         
         return {
-            "debug_info": debug_info,
-            "service_info": service_info,
-            "test_description": test_description,
-            "status": "AI service working correctly"
+            "status": "healthy",
+            "message": "Gemini AI service is working correctly",
+            **service_info
         }
     except Exception as e:
         return {
-            "error": str(e),
-            "status": "AI service configuration error",
-            "debug_info": {
-                "use_vertex_ai": getattr(settings, 'use_vertex_ai', None) if 'settings' in locals() else None,
-                "api_key_configured": bool(settings.get_google_api_key()) if 'settings' in locals() and hasattr(settings, 'get_google_api_key') else False
-            }
+            "status": "error",
+            "message": f"AI service error: {str(e)}",
+            "service": "Gemini Direct API"
         }
 
 @app.on_event("startup")

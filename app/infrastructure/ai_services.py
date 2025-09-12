@@ -156,35 +156,4 @@ class GeminiDirectService(BaseAIService):
         except Exception as e:
             raise AIConfigurationError(f"Failed to initialize {self.service_name}: {e}")
 
-class VertexAIService(BaseAIService):
-    """Servicio usando Vertex AI"""
-    
-    def __init__(self, project_id: str, location: str = "us-central1"):
-        super().__init__("Vertex AI")
-        
-        if not project_id or not project_id.strip():
-            raise AIConfigurationError("Vertex AI project ID is required")
-        
-        try:
-            import vertexai
-            from vertexai.generative_models import GenerativeModel, GenerationConfig
-            
-            vertexai.init(project=project_id, location=location)
-            
-            self._model = GenerativeModel("gemini-2.0-flash")
-            self._generation_config = GenerationConfig(
-                temperature=0.7,
-                top_p=0.8,
-                top_k=40,
-                max_output_tokens=1024,
-            )
-            
-            self.project_id = project_id
-            self.location = location
-            
-            logger.info(f"🚀 {self.service_name} initialized - Project: {project_id}, Location: {location}")
-            
-        except ImportError as e:
-            raise AIConfigurationError(f"Vertex AI SDK not installed. Install with: pip install google-cloud-aiplatform")
-        except Exception as e:
-            raise AIConfigurationError(f"Failed to initialize {self.service_name}: {e}")
+# VertexAIService removed - Only Gemini Direct API is supported

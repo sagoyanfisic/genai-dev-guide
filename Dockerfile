@@ -1,48 +1,28 @@
-FROM python:3.11-slim as builder
+FROM python:3.12-slim
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    gcc \
-    default-libmysqlclient-dev \
-    pkg-config \
-    && rm -rf /var/lib/apt/lists/*
-
-ENV VIRTUAL_ENV=/opt/venv
-RUN python -m venv $VIRTUAL_ENV
-ENV PATH="$VIRTUAL_ENV/bin:$PATH"
-
-COPY requirements.txt .
-RUN pip install --no-cache-dir --upgrade pip && \
-    pip install --no-cache-dir -r requirements.txt
-
-FROM python:3.11-slim
-
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    default-mysql-client \
     curl \
+    ca-certificates \
+    netcat-openbsd \
     && rm -rf /var/lib/apt/lists/*
 
-COPY --from=builder /opt/venv /opt/venv
-ENV PATH="/opt/venv/bin:$PATH"
-
-RUN useradd -r -u 1001 -d /app appuser
-
-WORKDIR /app
-
-RUN mkdir -p /app/logs /app/pdfs && \
-    chown -R appuser:appuser /app
-
-COPY --chown=appuser:appuser app/ ./app/
-COPY --chown=appuser:appuser alembic/ ./alembic/
-COPY --chown=appuser:appuser alembic.ini ./
-COPY --chown=appuser:appuser gunicorn.conf.py ./
-COPY --chown=appuser:appuser entrypoint.sh ./
+RUN groupadd --gid 1000 appuser && \
+    useradd --uid 1000 --gid 1000 --create-home appuser
 
 USER appuser
 
-ENV PYTHONPATH=/app \
-    PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1
+ADD --chown=appuser:appuser https://astral.sh/uv/0.8.13/install.sh /home/appuser/uv-installer.sh
+RUN sh /home/appuser/uv-installer.sh && rm /home/appuser/uv-installer.sh
 
+ENV PATH="/home/appuser/.local/bin:$PATH"
+
+WORKDIR /app
+
+COPY --chown=appuser:appuser pyproject.toml .python-version uv.lock ./
+
+RUN uv sync --locked --no-cache
+
+COPY --chown=appuser:appuser . .
 
 EXPOSE 8000
 
