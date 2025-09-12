@@ -190,10 +190,25 @@ def improve_product_description(
     product_id: int,
     service: ProductService = Depends(get_product_service)
 ):
-    """Mejorar la descripción de un producto usando AI"""
+    """Mejorar la descripción de un producto usando Gemini AI"""
     try:
         product = service.improve_product_description(product_id)
         return ProductResponse.model_validate(product)
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+    except Exception:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Internal server error")
+
+@router.get("/suggestions/{category}", response_model=CategorySuggestionsResponse)
+def get_category_suggestions(
+    category: str,
+    count: int = Query(5, ge=1, le=10, description="Number of suggestions (1-10)"),
+    service: ProductService = Depends(get_product_service)
+):
+    """Obtener sugerencias de productos para una categoría usando Gemini AI"""
+    try:
+        suggestions = service.get_category_suggestions(category, count)
+        return CategorySuggestionsResponse(category=category, suggestions=suggestions)
     except ValueError as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
     except Exception:

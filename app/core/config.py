@@ -14,10 +14,8 @@ class Settings(BaseSettings):
     environment: str = "development"
     gcp_project_id: Optional[str] = None
     
-    # AI Service Configuration
-    use_vertex_ai: bool = False
-    vertex_ai_project_id: Optional[str] = None
-    vertex_ai_location: str = "us-central1"
+    # AI Service Configuration - Only Gemini Direct API
+    use_vertex_ai: bool = False  # Forced to False - only Gemini Direct allowed
     
     # Security Configuration
     cors_origins: Optional[str] = None
