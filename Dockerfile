@@ -30,4 +30,3 @@ COPY --chown=appuser:appuser . .
 EXPOSE 8080
 
 CMD ["./entrypoint.sh"]
-
