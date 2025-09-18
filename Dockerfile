@@ -1,13 +1,18 @@
 FROM python:3.12-slim
 
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1
+
 RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     ca-certificates \
-    netcat-openbsd \
+    && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
 RUN groupadd --gid 1000 appuser && \
-    useradd --uid 1000 --gid 1000 --create-home appuser
+    useradd --uid 1000 --gid 1000 --create-home appuser && \
+    mkdir -p /app && \
+    chown -R appuser:appuser /app
 
 USER appuser
 
@@ -24,6 +29,6 @@ RUN uv sync --locked --no-cache
 
 COPY --chown=appuser:appuser . .
 
-EXPOSE 8000
+EXPOSE 8080
 
 CMD ["./entrypoint.sh"]
