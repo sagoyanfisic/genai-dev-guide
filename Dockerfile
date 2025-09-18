@@ -10,7 +10,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 RUN groupadd --gid 1000 appuser && \
-    useradd --uid 1000 --gid 1000 --create-home appuser
+    useradd --uid 1000 --gid 1000 --create-home appuser && \
+    mkdir -p /app && \
+    chown -R appuser:appuser /app
 
 USER appuser
 
