@@ -1,29 +1,17 @@
-  FROM python:3.12-slim
+FROM python:3.12-slim
 
-  RUN apt-get update && apt-get install -y --no-install-recommends \
-      curl \
-      ca-certificates \
-      && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
 
-  RUN groupadd --gid 1000 appuser && \
-      useradd --uid 1000 --gid 1000 --create-home appuser && \
-      mkdir /app && \
-      chown appuser:appuser /app
+WORKDIR /app
 
-  RUN curl -LsSf https://astral.sh/uv/0.8.13/install.sh | sh
+COPY requirements.txt ./
+RUN pip install --no-cache-dir -r requirements.txt
 
-  ENV PATH="/home/appuser/.local/bin:$PATH"
+COPY . .
 
-  WORKDIR /app
+EXPOSE 8000
 
-  COPY --chown=appuser:appuser pyproject.toml .python-version uv.lock ./
-
-  RUN uv sync --locked --no-cache
-
-  COPY --chown=appuser:appuser . .
-  
-  USER appuser
-
-  EXPOSE 8000
-
-  CMD ["./entrypoint.sh"]
+CMD ["./entrypoint.sh"]
