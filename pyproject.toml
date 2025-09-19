@@ -16,6 +16,7 @@ dependencies = [
     "google-generativeai",
     "cryptography",
     "google-cloud-secret-manager==2.20.0",
+    "cloud-sql-python-connector[pymysql]",
 ]
 
 [project.optional-dependencies]
