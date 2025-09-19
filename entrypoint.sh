@@ -18,4 +18,4 @@ echo "✅ MariaDB is ready!"
 
 # Start the application
 echo "🌟 Starting Granian server (Rust-powered ASGI)..."
-uv run granian --host 0.0.0.0 --port 8000 --workers 2 --interface asgi app.main:app
+uv run granian --host 0.0.0.0 --port 8080 --workers 2 --interface asgi app.main:app
