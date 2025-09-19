@@ -30,17 +30,9 @@ target_metadata = Base.metadata
 # ... etc.
 
 def get_database_url():
-    """Get database URL from environment variables or use Cloud SQL engine"""
+    """Get database URL from environment variables"""
     from app.core.config import settings
-
-    # Check if we're using Cloud SQL
-    if settings.use_cloud_sql:
-        # For Cloud SQL, we need to use the engine from the main app
-        # Return a placeholder - we'll handle this in run_migrations_online
-        return "cloud_sql_placeholder"
-    else:
-        # Use standard MariaDB connection
-        return settings.get_database_url()
+    return settings.get_database_url()
 
 def run_migrations_offline() -> None:
     """Run migrations in 'offline' mode.
@@ -75,21 +67,14 @@ def run_migrations_online() -> None:
     and associate a connection with the context.
 
     """
-    from app.core.config import settings
+    configuration = config.get_section(config.config_ini_section)
+    configuration['sqlalchemy.url'] = get_database_url()
 
-    # Use Cloud SQL engine if configured
-    if settings.use_cloud_sql:
-        from app.core.database import engine as app_engine
-        connectable = app_engine
-    else:
-        configuration = config.get_section(config.config_ini_section)
-        configuration['sqlalchemy.url'] = get_database_url()
-
-        connectable = engine_from_config(
-            configuration,
-            prefix="sqlalchemy.",
-            poolclass=pool.NullPool,
-        )
+    connectable = engine_from_config(
+        configuration,
+        prefix="sqlalchemy.",
+        poolclass=pool.NullPool,
+    )
 
     with connectable.connect() as connection:
         context.configure(

@@ -1,7 +1,7 @@
 from pydantic_settings import BaseSettings
 from typing import Optional
 import os
-from .secret_manager import get_secret_or_env
+from .secret_manager import get_secret_or_env, get_database_config_from_secret
 
 class Settings(BaseSettings):
     google_api_key: Optional[str] = None
@@ -31,6 +31,23 @@ class Settings(BaseSettings):
     class Config:
         env_file = ".env"
 
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        # Load database config from secret if available
+        self._load_database_config_from_secret()
+
+    def _load_database_config_from_secret(self):
+        """Load database configuration from GCP Secret Manager"""
+        db_config = get_database_config_from_secret()
+        if db_config:
+            # Update from secret, environment variables already loaded by Pydantic
+            self.db_host = db_config.get("DB_HOST", self.db_host)
+            self.db_port = db_config.get("DB_PORT", self.db_port)
+            self.db_name = db_config.get("DB_NAME", self.db_name)
+            self.db_user = db_config.get("DB_USER", self.db_user)
+            self.db_password = db_config.get("DB_PASSWORD", self.db_password)
+            self.use_cloud_sql = db_config.get("USE_CLOUD_SQL", self.use_cloud_sql)
+
     def get_google_api_key(self) -> str:
         """Get Google API key lazily"""
         if not hasattr(self, '_google_api_key'):
@@ -48,8 +65,8 @@ class Settings(BaseSettings):
         return self._google_api_key
     
     def get_database_url(self) -> str:
-        """Get database URL for local MariaDB connection"""
-        # Only used for local MariaDB - Cloud SQL uses the Python Connector
+        """Get database URL for MariaDB connection"""
+        # MariaDB connection using MySQL protocol
         return f"mysql+pymysql://{self.db_user}:{self.db_password}@{self.db_host}:{self.db_port}/{self.db_name}"
 
 settings = Settings()
