@@ -4,7 +4,7 @@ import os
 from .secret_manager import get_secret_or_env
 
 class Settings(BaseSettings):
-    google_api_key: str
+    google_api_key: Optional[str] = None
     database_url: Optional[str] = None  # Optional - not used for Cloud SQL
     db_host: str = "mariadb"
     db_port: int = 3306
@@ -34,11 +34,17 @@ class Settings(BaseSettings):
     def get_google_api_key(self) -> str:
         """Get Google API key lazily"""
         if not hasattr(self, '_google_api_key'):
-            self._google_api_key = (
-                get_secret_or_env("google-api-key", "GOOGLE_API_KEY") or 
-                self.google_api_key or 
+            api_key = (
+                get_secret_or_env("google-api-key", "GOOGLE_API_KEY") or
+                self.google_api_key or
                 os.getenv("GOOGLE_API_KEY", "")
             )
+            if not api_key:
+                raise ValueError(
+                    "Google API key is required but not found. Set GOOGLE_API_KEY environment variable "
+                    "or configure google-api-key in Google Secret Manager."
+                )
+            self._google_api_key = api_key
         return self._google_api_key
     
     def get_database_url(self) -> str:
