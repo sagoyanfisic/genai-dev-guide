@@ -12,6 +12,8 @@ google-generativeai
 google-cloud-aiplatform
 cryptography
 google-cloud-secret-manager==2.20.0
+google-cloud-sql-connector
+cloud-sql-python-connector[pymysql]
 pytest==7.4.3
 pytest-asyncio==0.21.1
 pytest-mock==3.12.0
