@@ -11,10 +11,10 @@ until nc -z ${DB_HOST} ${DB_PORT:-3306}; do
 done
 echo "✅ MariaDB is ready!"
 
-# # Run migrations
-# echo "🔄 Running database migrations..."
-# uv run alembic upgrade head
-# echo "✅ Migrations completed!"
+# Run migrations
+echo "🔄 Running database migrations..."
+uv run alembic upgrade head
+echo "✅ Migrations completed!"
 
 # Start the application
 echo "🌟 Starting Granian server (Rust-powered ASGI)..."
