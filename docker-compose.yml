@@ -1,4 +1,5 @@
 services:
+
   mariadb:
     image: mariadb:11
     container_name: pdf_ai_mariadb
@@ -23,13 +24,20 @@ services:
     depends_on:
       - mariadb
     environment:
-      # Database
-      DATABASE_URL: mysql+pymysql://${DB_USER:-pdf_user}:${DB_PASSWORD:-pdf_password}@mariadb:3306/${DB_NAME:-pdf_ai_db}
-      DB_HOST: mariadb
-      DB_PORT: 3306
+      # Database - Local MariaDB configuration (not used when USE_CLOUD_SQL=true)
+      DB_HOST: ${DB_HOST:-mariadb}
+      DB_PORT: ${DB_PORT:-3306}
       DB_NAME: ${DB_NAME:-pdf_ai_db}
       DB_USER: ${DB_USER:-pdf_user}
       DB_PASSWORD: ${DB_PASSWORD:-pdf_password}
+
+      # Cloud SQL Configuration
+      USE_CLOUD_SQL: ${USE_CLOUD_SQL:-false}
+      CLOUD_SQL_INSTANCE_CONNECTION_NAME: ${CLOUD_SQL_INSTANCE_CONNECTION_NAME}
+
+      # IAM Database Authentication
+      USE_IAM_AUTH: ${USE_IAM_AUTH:-false}
+      CLOUD_SQL_IAM_USER: ${CLOUD_SQL_IAM_USER}
       
       # AI Services
       GOOGLE_API_KEY: ${GOOGLE_API_KEY}
